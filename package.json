@@ -19,6 +19,7 @@
         "test:acceptance": "NODE_OPTIONS='--import tsx' cucumber-js tests/acceptance/*.feature --import 'tests/step-definitions/**/*.ts'"
     },
     "dependencies": {
+        "@google/generative-ai": "^0.24.1",
         "@hono/node-server": "^1.19.8",
         "@hono/swagger-ui": "^0.5.3",
         "@hono/zod-openapi": "^1.2.0",

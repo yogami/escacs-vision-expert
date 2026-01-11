@@ -3,12 +3,24 @@
  */
 
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { ExpertVisionService } from '../../lib/vision-expert/domain/services/ExpertVisionService';
+import { ExpertVisionService, IVisionModelPort } from '../../lib/vision-expert/domain/services/ExpertVisionService';
 import { MockVisionModelAdapter } from '../../lib/vision-expert/infrastructure/MockVisionModelAdapter';
+import { GeminiVisionAdapter } from '../../lib/vision-expert/infrastructure/GeminiVisionAdapter';
+import process from 'node:process';
 
 export const visionRoutes = new OpenAPIHono();
 
-const model = new MockVisionModelAdapter();
+// Use Gemini if API key is available, otherwise fall back to mock
+function createVisionAdapter(): IVisionModelPort {
+    if (process.env.GOOGLE_AI_API_KEY) {
+        console.log('Using Gemini Vision Adapter (Production)');
+        return new GeminiVisionAdapter();
+    }
+    console.log('Using Mock Vision Adapter (Development)');
+    return new MockVisionModelAdapter();
+}
+
+const model = createVisionAdapter();
 const service = new ExpertVisionService(model);
 
 const DetectionSchema = z.object({
