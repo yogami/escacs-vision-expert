@@ -58,12 +58,25 @@ visionRoutes.openapi(
     }),
     async (c) => {
         const { measureType, imageBase64 } = c.req.valid('json');
-        const buffer = Buffer.from(imageBase64, 'base64');
 
-        const result = await service.analyzeNicheFailure(buffer, measureType);
-        return c.json({
-            ...result,
-            detectedAt: result.detectedAt.toISOString()
-        });
+        try {
+            const buffer = Buffer.from(imageBase64, 'base64');
+            const result = await service.analyzeNicheFailure(buffer, measureType);
+            return c.json({
+                ...result,
+                detectedAt: result.detectedAt.toISOString()
+            });
+        } catch (error) {
+            console.error('Vision analysis error:', error);
+            return c.json({
+                id: crypto.randomUUID(),
+                targetMeasure: measureType,
+                failureMode: 'error',
+                confidence: 0,
+                recommendedAction: 'Analysis failed - please retry with a valid image',
+                detectedAt: new Date().toISOString(),
+                error: error instanceof Error ? error.message : 'Unknown error'
+            }, 500);
+        }
     }
 );
