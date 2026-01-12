@@ -32,6 +32,16 @@ const DetectionSchema = z.object({
     detectedAt: z.string()
 });
 
+const ErrorSchema = z.object({
+    id: z.string(),
+    targetMeasure: z.string(),
+    failureMode: z.string(),
+    confidence: z.number(),
+    recommendedAction: z.string(),
+    detectedAt: z.string(),
+    error: z.string()
+});
+
 visionRoutes.openapi(
     createRoute({
         method: 'post',
@@ -53,6 +63,10 @@ visionRoutes.openapi(
             200: {
                 description: 'Analysis complete',
                 content: { 'application/json': { schema: DetectionSchema } }
+            },
+            500: {
+                description: 'Analysis failed',
+                content: { 'application/json': { schema: ErrorSchema } }
             }
         }
     }),
@@ -65,7 +79,7 @@ visionRoutes.openapi(
             return c.json({
                 ...result,
                 detectedAt: result.detectedAt.toISOString()
-            });
+            }, 200);
         } catch (error) {
             console.error('Vision analysis error:', error);
             return c.json({
